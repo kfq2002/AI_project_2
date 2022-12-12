@@ -8,7 +8,6 @@ from tqdm import tqdm
 from PIL import Image
 from torchvision import models, transforms
 from model import MyModel
-from torch.utils.tensorboard import SummaryWriter
 from dataset import Dataset
 import argparse
 
@@ -105,15 +104,16 @@ def train(model, loss_func, optimizer, step_scheduler, train_transform, valid_tr
         wandb.log({'test acc':test_acc})
 
     #save
-    checkpoint = {
-    "net": model.state_dict(),
-    'optimizer': optimizer.state_dict(),
-    "epoch": epoch
-    }
-    save_model_file = os.path.join(args.output_dir, "mymodel.pth")
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
-    torch.save(checkpoint, save_model_file)
+    if args.save_model:
+        checkpoint = {
+        "net": model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        "epoch": epoch
+        }
+        save_model_file = os.path.join(args.output_dir, "mymodel.pth")
+        if not os.path.exists(args.output_dir):
+            os.makedirs(args.output_dir)
+        torch.save(checkpoint, save_model_file)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -133,6 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('--valid_image_path', type=str, default='data/val')
     parser.add_argument('--test_image_path', type=str, default='data/test')
     parser.add_argument('--output_dir', type=str, default='checkpoints/')
+    parser.add_argument('--save_model', action="store_true")
     parser.add_argument('--resume', action="store_true", help='use a trained model or not')
     parser.add_argument('--chkpt', type=str, default='checkpoints/densenet201.pth', 
                                             help='there are two pretrained model in dir checkpoints/, densenet201.pth and mymodel.pth')
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     if args.wandb:
         import wandb
         wandb.init(project='AI_project_2',
-                    #entity='kfq20', 
+                    entity='kfq20', 
                     name='densenet201')
 
     if args.model == 'mymodel':
@@ -180,7 +181,9 @@ if __name__ == '__main__':
         model = models.resnet18(pretrained=True)
         num_fits = model.fc.in_features
         model.fc = nn.Linear(num_fits, args.num_classes)
-        optimizer = optim.Adam(model.fc.parameters(), lr=args.lr)
+        optimizer = optim.Adam([{'params': model.layer4.parameters(), 'lr': 0.0001},
+                                {'params': model.fc.parameters(), 'lr': 0.001},
+                               ])
         train_transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.RandomHorizontalFlip(),
@@ -208,7 +211,9 @@ if __name__ == '__main__':
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # 各通道颜色的均值和方差,用于归一化
         ])
-        optimizer = optim.Adam(model.fc.parameters(), lr=args.lr)
+        optimizer = optim.Adam([{'params': model.layer4.parameters(), 'lr': 0.0001},
+                                {'params': model.fc.parameters(), 'lr': 0.001},
+                               ])
 
     model = model.to(args.device)
     criterion = nn.CrossEntropyLoss()
