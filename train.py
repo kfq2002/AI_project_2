@@ -12,6 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from dataset import Dataset
 import argparse
 
+
 def predict(model, device, image_path):
     model.eval()
     val_acc_num = 0
