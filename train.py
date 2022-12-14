@@ -118,7 +118,7 @@ def train(model, loss_func, optimizer, step_scheduler, train_transform, valid_tr
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='cuda:0', help='cpu or cuda:0')
-    parser.add_argument('--model', type=str, default='densenet201', help='model name')
+    parser.add_argument('--model', type=str, default='mymodel', help='model name')
     parser.add_argument('--num_workers', type=int, default=8, help='cpu threads num')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size')
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
@@ -135,8 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', type=str, default='checkpoints/')
     parser.add_argument('--save_model', action="store_true")
     parser.add_argument('--resume', action="store_true", help='use a trained model or not')
-    parser.add_argument('--chkpt', type=str, default='checkpoints/densenet201.pth', 
-                                            help='there are two pretrained model in dir checkpoints/, densenet201.pth and mymodel.pth')
+    parser.add_argument('--chkpt', type=str, default='checkpoints/mymodel.pth')
     args = parser.parse_args()
     print(args)
     if args.wandb:
@@ -181,8 +180,8 @@ if __name__ == '__main__':
         model = models.resnet18(pretrained=True)
         num_fits = model.fc.in_features
         model.fc = nn.Linear(num_fits, args.num_classes)
-        optimizer = optim.Adam([{'params': model.layer4.parameters(), 'lr': 0.0001},
-                                {'params': model.fc.parameters(), 'lr': 0.001},
+        optimizer = optim.Adam([{'params': model.layer4.parameters(), 'lr': args.lr * 0.1},
+                                {'params': model.fc.parameters(), 'lr': args.lr},
                                ])
         train_transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -211,8 +210,8 @@ if __name__ == '__main__':
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])  # 各通道颜色的均值和方差,用于归一化
         ])
-        optimizer = optim.Adam([{'params': model.layer4.parameters(), 'lr': 0.0001},
-                                {'params': model.fc.parameters(), 'lr': 0.001},
+        optimizer = optim.Adam([{'params': model.layer4.parameters(), 'lr': args.lr * 0.1},
+                                {'params': model.fc.parameters(), 'lr': args.lr},
                                ])
 
     model = model.to(args.device)
