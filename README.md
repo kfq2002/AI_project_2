@@ -3,6 +3,9 @@
 ## 下载文件
 首先运行 git clone https://github.com/kfq2002/AI_project_2.git 下载文件，文件名为 AI_project_2
 
+其次若想使用预训练好的模型，则需要将mymodel.pth文件下载到checkpoints文件夹下，下载地址为：  
+https://cloud.tsinghua.edu.cn/f/fb3e0db1f0ab4296ba94/?dl=1
+
 ## 文件简介：
 checkpoints/mymodel.pth: 此文件为自己搭建模型的预训练文件，已训练150个epoch，val acc约为64%，基本已达收敛；  
 data/: data文件夹下是已经按train:val:test=8:1:1划分好的数据集，为了方便程序调用，里面每一类图片的字符串编号都被换为了从0到18的数字，其对应关系与原数据集的类别顺序相同；   
@@ -19,7 +22,7 @@ torchvision: 0.14.0
 其他用到的包：tqdm, argparse, wandb直接使用pip命令安装即可  
 
 ## 代码运行参数介绍:
-首先介绍train.py文件中ArgumentParser的各个参数：
+介绍train.py文件中ArgumentParser的各个参数：
 
 --device 默认为"cuda:0"，可设置为"cpu"或"cuda:X"  
 --model 模型名字，默认为"mymodel"我的模型，可选项：经过改编的"resnet18", "resnet152", "densenet201"  
@@ -38,7 +41,9 @@ torchvision: 0.14.0
 其次直接运行train.py文件即可
 
 例1：加载预训练模型，运行mymodel：  
-python train.py --device cuda:1 --lr_update --lr_step_size 100 --epoch 300 --resume
+python train.py --device cuda:1 --lr_update --lr_step_size 100 --epoch 300 --resume  
+
+（若不使用预训练模型，则去掉--resume参数即可）
 
 例2：运行resnet18 model：  
 python train.py --device cuda:1 --model resnet18 --lr_update --epoch 30 
